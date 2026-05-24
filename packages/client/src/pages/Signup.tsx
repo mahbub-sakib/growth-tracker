@@ -1,10 +1,18 @@
 
 import React, { useState } from 'react';
 
+const ROLES = [
+  { value: "LEARNER", label: "Learner" },
+  { value: "MANAGER", label: "Manager" },
+] as const;
+
+type Role = typeof ROLES[number]["value"];
+
 const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [role, setRole] = useState<Role>(ROLES[0].value);
 
   const passwordRules = {
     length: password.length >= 8,
@@ -78,7 +86,34 @@ const Signup = () => {
               </li>
             </ul>
           )}
+        </div>
 
+        {/* Role Selector */}
+        <div className="flex flex-col gap-2">
+          <span className="text-sm font-medium text-gray-700">Role</span>
+          <div className="flex flex-col rounded-lg border border-gray-300 overflow-hidden">
+            {ROLES.map((r) => (
+              <label
+                key={r.value}
+                className={`px-4 py-2.5 text-sm font-medium cursor-pointer transition-colors border-b border-gray-300 last:border-b-0
+                  ${role === r.value
+                    ? "bg-indigo-600 text-white"
+                    : "text-gray-500 hover:bg-gray-50"
+                  }`}
+              >
+                <input
+                  type="radio"
+                  name="role"
+                  data-testid={`role-${r.value.toLowerCase()}`}
+                  value={r.value}
+                  checked={role === r.value}
+                  onChange={() => setRole(r.value)}
+                  className="sr-only"
+                />
+                {r.label}
+              </label>
+            ))}
+          </div>
         </div>
 
         <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-lg text-sm transition-colors">Sign Up</button>
