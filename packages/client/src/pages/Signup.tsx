@@ -13,6 +13,7 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [role, setRole] = useState<Role>(ROLES[0].value);
+  const [teamName, setTeamName] = useState("");
 
   const passwordRules = {
     length: password.length >= 8,
@@ -107,7 +108,10 @@ const Signup = () => {
                   data-testid={`role-${r.value.toLowerCase()}`}
                   value={r.value}
                   checked={role === r.value}
-                  onChange={() => setRole(r.value)}
+                  onChange={() => {
+                    setRole(r.value);
+                    if (r.value !== "MANAGER") setTeamName("");
+                  }}
                   className="sr-only"
                 />
                 {r.label}
@@ -115,6 +119,22 @@ const Signup = () => {
             ))}
           </div>
         </div>
+
+        {/* Team Name — only rendered when MANAGER is selected */}
+        {role === "MANAGER" && (
+          <div className="flex flex-col gap-1">
+            <label htmlFor="team-name" className="text-sm font-medium text-gray-700">Team Name</label>
+            <input
+              id="team-name"
+              type="text"
+              data-testid="team-name-input"
+              value={teamName}
+              onChange={(e) => setTeamName(e.target.value)}
+              placeholder="e.g. Platform Team"
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+            />
+          </div>
+        )}
 
         <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-lg text-sm transition-colors">Sign Up</button>
 
