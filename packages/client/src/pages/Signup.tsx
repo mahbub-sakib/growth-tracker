@@ -8,12 +8,35 @@ const ROLES = [
 
 type Role = typeof ROLES[number]["value"];
 
+const DEPARTMENTS = [
+  "Engineering",
+  "Product",
+  "Design",
+  "Marketing",
+  "Operations",
+  "HR",
+  "Other",
+] as const;
+
+type Department = typeof DEPARTMENTS[number];
+
+const EXPERIENCE_LEVELS = [
+  { value: "JUNIOR", label: "Junior", description: "0–2 years of experience" },
+  { value: "MID", label: "Mid", description: "2–5 years of experience" },
+  { value: "SENIOR", label: "Senior", description: "5+ years of experience" },
+] as const;
+
+type ExperienceLevel = typeof EXPERIENCE_LEVELS[number]["value"];
+
+
 const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [role, setRole] = useState<Role>(ROLES[0].value);
   const [teamName, setTeamName] = useState("");
+  const [department, setDepartment] = useState<Department | "">("");
+  const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel | "">("");
 
   const passwordRules = {
     length: password.length >= 8,
@@ -135,6 +158,54 @@ const Signup = () => {
             />
           </div>
         )}
+
+        {/* Department */}
+        <div className="flex flex-col gap-1">
+          <label htmlFor="department" className="text-sm font-medium text-gray-700">Department</label>
+          <select
+            id="department"
+            data-testid="department-select"
+            value={department}
+            onChange={(e) => setDepartment(e.target.value as Department)}
+            required
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 bg-white"
+          >
+            <option value="" disabled>Please select a department</option>
+            {DEPARTMENTS.map((d) => (
+              <option key={d} value={d}>{d}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Experience Level */}
+        <fieldset className="flex flex-col gap-2">
+          <legend className="text-sm font-medium text-gray-700 mb-1">Experience Level</legend>
+          {EXPERIENCE_LEVELS.map((level) => (
+            <label
+              key={level.value}
+              className={`flex items-start gap-3 border rounded-lg px-4 py-3 cursor-pointer transition-colors
+                ${experienceLevel === level.value
+                  ? "border-indigo-500 bg-indigo-50"
+                  : "border-gray-300 hover:bg-gray-50"
+                }`}
+            >
+              <input
+                type="radio"
+                name="experienceLevel"
+                data-testid={`experience-${level.value.toLowerCase()}`}
+                value={level.value}
+                checked={experienceLevel === level.value}
+                onChange={() => setExperienceLevel(level.value)}
+                className="mt-0.5 accent-indigo-600"
+                aria-describedby={`exp-desc-${level.value}`}
+              />
+              <div>
+                <span className="text-sm font-medium text-gray-800">{level.label}</span>
+                <p id={`exp-desc-${level.value}`} className="text-xs text-gray-500 mt-0.5">{level.description}</p>
+              </div>
+            </label>
+          ))}
+        </fieldset>
 
         <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-lg text-sm transition-colors">Sign Up</button>
 
