@@ -37,6 +37,9 @@ const Signup = () => {
   const [teamName, setTeamName] = useState("");
   const [department, setDepartment] = useState<Department | "">("");
   const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel | "">("");
+  const [bio, setBio] = useState("");
+
+  const BIO_MAX = 250;
 
   const passwordRules = {
     length: password.length >= 8,
@@ -48,7 +51,12 @@ const Signup = () => {
     e.preventDefault();
     setSubmitted(true);
     // TODO: wire up submission
-    console.log({ email, password });
+    console.log({
+      email,
+      password,
+      role,
+      ...(bio ? { bio } : {}),
+    });
   }
   return (
     <div className="max-w-md mx-auto mt-16 p-8 bg-white rounded-xl shadow">
@@ -206,6 +214,29 @@ const Signup = () => {
             </label>
           ))}
         </fieldset>
+
+        {/* Bio */}
+        <div className="flex flex-col gap-1">
+          <label htmlFor="bio" className="text-sm font-medium text-gray-700">
+            Bio <span className="text-gray-400 font-normal">(optional)</span>
+          </label>
+          <textarea
+            id="bio"
+            data-testid="bio-input"
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            maxLength={BIO_MAX}
+            rows={4}
+            placeholder="Tell us a little about yourself..."
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 resize-none"
+          />
+          <span
+            data-testid="bio-char-count"
+            className={`text-xs text-right ${bio.length >= BIO_MAX * 0.9 ? "text-amber-500" : "text-gray-400"}`}
+          >
+            {bio.length} / {BIO_MAX}
+          </span>
+        </div>
 
         <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-lg text-sm transition-colors">Sign Up</button>
 
