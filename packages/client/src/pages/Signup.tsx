@@ -41,6 +41,34 @@ const Signup = () => {
 
   const BIO_MAX = 250;
 
+  interface Address {
+    id: string;
+    label: string;
+    street1: string;
+    street2: string;
+    city: string;
+    zipCode: string;
+  }
+
+  const [addresses, setAddresses] = useState<Address[]>([]);
+
+  function addAddress() {
+    setAddresses((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), label: "", street1: "", street2: "", city: "", zipCode: "" },
+    ]);
+  }
+
+  function removeAddress(id: string) {
+    setAddresses((prev) => prev.filter((a) => a.id !== id));
+  }
+
+  function updateAddress(id: string, field: keyof Omit<Address, "id">, value: string) {
+    setAddresses((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, [field]: value } : a))
+    );
+  }
+
   const passwordRules = {
     length: password.length >= 8,
     upper: /[A-Z]/.test(password),
@@ -59,7 +87,7 @@ const Signup = () => {
     });
   }
   return (
-    <div className="max-w-md mx-auto mt-16 p-8 bg-white rounded-xl shadow">
+    <div >
       <h1 className="text-2xl font-bold text-gray-800 mb-6">Create Account</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
@@ -238,9 +266,109 @@ const Signup = () => {
           </span>
         </div>
 
+        {/* Addresses */}
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-700">
+              Addresses <span className="text-gray-400 font-normal">(optional)</span>
+            </span>
+            <button
+              type="button"
+              data-testid="add-address-btn"
+              onClick={addAddress}
+              className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+            >
+              + Add an address
+            </button>
+          </div>
+
+          {addresses.map((addr, index) => (
+            <div
+              key={addr.id}
+              data-testid="address-group"
+              className="border border-gray-200 rounded-lg p-4 flex flex-col gap-3"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-gray-600">Address {index + 1}</span>
+                <button
+                  type="button"
+                  data-testid="remove-address-btn"
+                  onClick={() => removeAddress(addr.id)}
+                  className="text-xs text-red-400 hover:text-red-600"
+                >
+                  Remove
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-gray-600">Label</label>
+                <input
+                  type="text"
+                  data-testid="address-label-input"
+                  value={addr.label}
+                  onChange={(e) => updateAddress(addr.id, "label", e.target.value)}
+                  placeholder="e.g. Home, Work"
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-gray-600">Street Address</label>
+                <input
+                  type="text"
+                  data-testid="address-street1-input"
+                  value={addr.street1}
+                  onChange={(e) => updateAddress(addr.id, "street1", e.target.value)}
+                  placeholder="123 Main St"
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-gray-600">
+                  Street Line 2 <span className="text-gray-400">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={addr.street2}
+                  onChange={(e) => updateAddress(addr.id, "street2", e.target.value)}
+                  placeholder="Apt, suite, floor..."
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <div className="flex flex-col gap-1 flex-1">
+                  <label className="text-xs font-medium text-gray-600">City</label>
+                  <input
+                    type="text"
+                    data-testid="address-city-input"
+                    value={addr.city}
+                    onChange={(e) => updateAddress(addr.id, "city", e.target.value)}
+                    placeholder="City"
+                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                  />
+                </div>
+                <div className="flex flex-col gap-1 w-28">
+                  <label className="text-xs font-medium text-gray-600">ZIP Code</label>
+                  <input
+                    type="number"
+                    data-testid="address-zip-input"
+                    value={addr.zipCode}
+                    onChange={(e) => updateAddress(addr.id, "zipCode", e.target.value)}
+                    placeholder="12345"
+                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
         <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-lg text-sm transition-colors">Sign Up</button>
 
       </form>
+
     </div>
   );
 };
