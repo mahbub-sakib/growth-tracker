@@ -77,6 +77,7 @@ function getDayOptions(year: string, month: string): string[] {
 const Signup = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [password, setPassword] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [role, setRole] = useState<Role>(ROLES[0].value);
@@ -92,6 +93,23 @@ const Signup = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const BIO_MAX = 250;
+
+  async function checkEmail(value: string) {
+    if (!value) return;
+    try {
+      const res = await fetch(
+        `http://localhost:8000/api/auth/check-email?email=${encodeURIComponent(value)}`
+      );
+      const data = await res.json();
+      if (!data.available) {
+        setEmailError("This email is already in use.");
+      } else {
+        setEmailError("");
+      }
+    } catch {
+      // silently ignore network errors on blur — submit will catch it anyway
+    }
+  }
 
   interface Address {
     id: string;
@@ -150,8 +168,18 @@ const Signup = () => {
     setSubmitted(true);
     setErrorMessage("");
 
+    if (emailError) {
+      return;
+    }
+
     if (!isBirthdateComplete) {
       return; // block submission until year, month, and day are all chosen
+    }
+
+    const allPasswordRulesMet = passwordRules.length && passwordRules.upper && passwordRules.special;
+    if (!allPasswordRulesMet) {
+      setErrorMessage("Password field validation error");
+      return;
     }
 
     // Sanitise the payload before sending:
@@ -225,11 +253,16 @@ const Signup = () => {
             type="email"
             data-testid="email-input"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => { setEmail(e.target.value); setEmailError(""); }}
+            onBlur={(e) => checkEmail(e.target.value)}
             autoComplete="email"
             required
+            placeholder="your@email.com"
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
           />
+          {emailError && (
+            <span className="text-xs text-red-500">{emailError}</span>
+          )}
         </div>
 
         <div className="flex flex-col gap-1">
