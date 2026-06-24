@@ -5,7 +5,7 @@ import Signup from '@/pages/Signup';
 
 function App() {
   return (
-    <div className="w-full h-dvh flex items-center justify-center bg-neutral-50">
+    <div className="w-full bg-neutral-50">
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />

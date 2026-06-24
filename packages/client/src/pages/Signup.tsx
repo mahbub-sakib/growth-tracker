@@ -1,5 +1,5 @@
-
-import React, { useState } from 'react';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const ROLES = [
   { value: "LEARNER", label: "Learner" },
@@ -28,8 +28,54 @@ const EXPERIENCE_LEVELS = [
 
 type ExperienceLevel = typeof EXPERIENCE_LEVELS[number]["value"];
 
+const CURRENT_YEAR = new Date().getFullYear();
+const MIN_YEAR = 1940;
+const MAX_YEAR = CURRENT_YEAR - 10;
+
+const YEARS = Array.from(
+  { length: MAX_YEAR - MIN_YEAR + 1 },
+  (_, i) => MAX_YEAR - i // newest first
+);
+
+const MONTHS = [
+  { value: "01", label: "January" },
+  { value: "02", label: "February" },
+  { value: "03", label: "March" },
+  { value: "04", label: "April" },
+  { value: "05", label: "May" },
+  { value: "06", label: "June" },
+  { value: "07", label: "July" },
+  { value: "08", label: "August" },
+  { value: "09", label: "September" },
+  { value: "10", label: "October" },
+  { value: "11", label: "November" },
+  { value: "12", label: "December" },
+] as const;
+
+// const DAYS = Array.from({ length: 31 }, (_, i) =>
+//   String(i + 1).padStart(2, "0")
+// );
+
+// Returns the number of days in a given month, automatically accounting
+// for leap years. Passing day 0 of "next month" rolls back to the last
+// day of the target month — a neat trick built into the Date object.
+function getDaysInMonth(year: number, month: number): number {
+  return new Date(year, month, 0).getDate();
+}
+
+function getDayOptions(year: string, month: string): string[] {
+  const daysCount =
+    year !== "" && month !== ""
+      ? getDaysInMonth(Number(year), Number(month))
+      : 31; // fallback while year/month aren't picked yet
+
+  return Array.from({ length: daysCount }, (_, i) =>
+    String(i + 1).padStart(2, "0")
+  );
+}
 
 const Signup = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -38,6 +84,12 @@ const Signup = () => {
   const [department, setDepartment] = useState<Department | "">("");
   const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel | "">("");
   const [bio, setBio] = useState("");
+  const [bdYear, setBdYear] = useState("");
+  const [bdMonth, setBdMonth] = useState("");
+  const [bdDay, setBdDay] = useState("");
+
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const BIO_MAX = 250;
 
@@ -69,23 +121,98 @@ const Signup = () => {
     );
   }
 
+  // Days available for the currently selected year + month.
+  // Recalculated on every render — never stored separately.
+  const dayOptions = getDayOptions(bdYear, bdMonth);
+
+  // If the user had "31" selected and switches to a month with fewer days
+  // (e.g. February), drop the now-invalid day rather than silently keep it.
+  useEffect(() => {
+    if (bdDay !== "" && !dayOptions.includes(bdDay)) {
+      setBdDay("");
+    }
+  }, [bdYear, bdMonth]);
+
+  // Combine the three selects into one YYYY-MM-DD string.
+  // Empty until all three parts are chosen.
+  const isBirthdateComplete = bdYear !== "" && bdMonth !== "" && bdDay !== "";
+  const birthdate = isBirthdateComplete ? `${bdYear}-${bdMonth}-${bdDay}` : "";
+
   const passwordRules = {
     length: password.length >= 8,
     upper: /[A-Z]/.test(password),
     special: /[^A-Za-z0-9]/.test(password),
   };
 
-  function handleSubmit(e: React.SyntheticEvent) {
+  const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
+    // function handleSubmit(e: React.SyntheticEvent) {
     e.preventDefault();
     setSubmitted(true);
-    // TODO: wire up submission
-    console.log({
+    setErrorMessage("");
+
+    if (!isBirthdateComplete) {
+      return; // block submission until year, month, and day are all chosen
+    }
+
+    // Sanitise the payload before sending:
+    // - strip client-only fields (id) from each address
+    // - cast zipCode to a number
+    // - omit teamName entirely unless role is MANAGER
+    // - omit bio entirely when left blank
+    const sanitisedAddresses = addresses.map(({ id, ...rest }) => ({
+      ...rest,
+      zipCode: Number(rest.zipCode),
+    }));
+
+    const payload = {
       email,
       password,
       role,
+      department,
+      experienceLevel,
+      birthdate,
       ...(bio ? { bio } : {}),
-    });
+      ...(role === "MANAGER" ? { teamName } : {}),
+      ...(sanitisedAddresses.length > 0 ? { addresses: sanitisedAddresses } : {}),
+    };
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch("http://localhost:8000/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // accept the refresh token cookie set by the server
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setErrorMessage(data.message ?? "Something went wrong. Please try again.");
+        return;
+      }
+
+      localStorage.setItem("accessToken", data.accessToken);
+      navigate("/");
+    } catch {
+      setErrorMessage("Network error. Please check your connection and try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+
+
+
+
+    // TODO: wire up submission
+    // console.log({
+    //   email,
+    //   password,
+    //   role,
+    //   birthdate,
+    //   ...(bio ? { bio } : {}),
+    // });
   }
+
   return (
     <div className="max-w-md mx-auto mt-16 p-8 bg-white rounded-xl shadow">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">Create Account</h1>
@@ -266,6 +393,59 @@ const Signup = () => {
           </span>
         </div>
 
+        {/* Birthdate */}
+        <div className="flex flex-col gap-1">
+          <span className="text-sm font-medium text-gray-700">Birthdate</span>
+          <div className="flex gap-3">
+
+            <select
+              data-testid="birthdate-year"
+              value={bdYear}
+              onChange={(e) => setBdYear(e.target.value)}
+              required
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 bg-white flex-1"
+            >
+              <option value="" disabled>Year</option>
+              {YEARS.map((y) => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+
+            <select
+              data-testid="birthdate-month"
+              value={bdMonth}
+              onChange={(e) => setBdMonth(e.target.value)}
+              disabled={bdYear === ""}
+              required
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 bg-white flex-1 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+            >
+              <option value="" disabled>Month</option>
+              {MONTHS.map((m) => (
+                <option key={m.value} value={m.value}>{m.label}</option>
+              ))}
+            </select>
+
+            <select
+              data-testid="birthdate-day"
+              value={bdDay}
+              onChange={(e) => setBdDay(e.target.value)}
+              disabled={bdMonth === ""}
+              required
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 bg-white flex-1 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+            >
+              <option value="" disabled>Day</option>
+              {dayOptions.map((d) => (
+                <option key={d} value={d}>{d}</option>
+              ))}
+            </select>
+
+          </div>
+
+          {submitted && !isBirthdateComplete && (
+            <span className="text-xs text-red-500">Please select a full date.</span>
+          )}
+        </div>
+
         {/* Addresses */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
@@ -364,6 +544,15 @@ const Signup = () => {
             </div>
           ))}
         </div>
+
+        {errorMessage && (
+          <p
+            data-testid="error-message"
+            className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2"
+          >
+            {errorMessage}
+          </p>
+        )}
 
         <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-lg text-sm transition-colors">Sign Up</button>
 
