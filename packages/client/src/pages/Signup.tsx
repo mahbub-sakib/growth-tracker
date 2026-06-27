@@ -1,3 +1,6 @@
+
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useForm, useFieldArray, useWatch } from "react-hook-form";
 
 const ROLES = [
@@ -44,34 +47,63 @@ interface SignupFormValues {
   experienceLevel: ExperienceLevel | "";
   bio: string;
   addresses: Address[];
+  bdYear: string;
+  bdMonth: string;
+  bdDay: string;
 }
 
 const BIO_MAX = 250;
 
-const Signup = () => {
+const CURRENT_YEAR = new Date().getFullYear();
+const MIN_YEAR = 1940;
+const MAX_YEAR = CURRENT_YEAR - 10;
 
-  // async function checkEmail(value: string) {
-  //   if (!value) return;
-  //   try {
-  //     const res = await fetch(
-  //       `http://localhost:8000/api/auth/check-email?email=${encodeURIComponent(value)}`
-  //     );
-  //     const data = await res.json();
-  //     if (!data.available) {
-  //       setEmailError("This email is already in use.");
-  //     } else {
-  //       setEmailError("");
-  //     }
-  //   } catch {
-  //     // silently ignore network errors on blur — submit will catch it anyway
-  //   }
-  // }
+const YEARS = Array.from(
+  { length: MAX_YEAR - MIN_YEAR + 1 },
+  (_, i) => MAX_YEAR - i // newest first
+);
+
+const MONTHS = [
+  { value: "01", label: "January" },
+  { value: "02", label: "February" },
+  { value: "03", label: "March" },
+  { value: "04", label: "April" },
+  { value: "05", label: "May" },
+  { value: "06", label: "June" },
+  { value: "07", label: "July" },
+  { value: "08", label: "August" },
+  { value: "09", label: "September" },
+  { value: "10", label: "October" },
+  { value: "11", label: "November" },
+  { value: "12", label: "December" },
+] as const;
+
+// Returns the number of days in a given month, automatically accounting
+// for leap years. Passing day 0 of "next month" rolls back to the last
+// day of the target month — a neat trick built into the Date object.
+function getDaysInMonth(year: number, month: number): number {
+  return new Date(year, month, 0).getDate();
+}
+
+function getDayOptions(year: string, month: string): string[] {
+  const daysCount =
+    year !== "" && month !== ""
+      ? getDaysInMonth(Number(year), Number(month))
+      : 31; // fallback while year/month aren't picked yet
+
+  return Array.from({ length: daysCount }, (_, i) =>
+    String(i + 1).padStart(2, "0")
+  );
+}
+
+const Signup = () => {
 
   const {
     register,
     handleSubmit,
     control,
     watch,
+    setValue,
     formState: { errors, touchedFields },
   } = useForm<SignupFormValues>({
     defaultValues: {
@@ -83,6 +115,9 @@ const Signup = () => {
       experienceLevel: "",
       bio: "",
       addresses: [],
+      bdYear: "",
+      bdMonth: "",
+      bdDay: "",
     },
   });
 
@@ -90,6 +125,10 @@ const Signup = () => {
     control,
     name: "addresses",
   });
+
+  const navigate = useNavigate();
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Watch values needed for derived UI
   const role = watch("role");
@@ -102,11 +141,61 @@ const Signup = () => {
     special: /[^A-Za-z0-9]/.test(password),
   };
 
-  const onSubmit = (data: SignupFormValues) => {
-    const { bio: bioValue, ...rest } = data;
-    console.log({ ...rest, ...(bioValue ? { bio: bioValue } : {}) });
-    // TODO: wire up submission
+  const bdYear = watch("bdYear");
+  const bdMonth = watch("bdMonth");
+  const bdDay = watch("bdDay");
+
+  const dayOptions = getDayOptions(bdYear, bdMonth);
+
+  // Drop the day if it becomes invalid after year/month change
+  useEffect(() => {
+    if (bdDay !== "" && !dayOptions.includes(bdDay)) {
+      setValue("bdDay", "");
+    }
+  }, [bdYear, bdMonth]);
+
+  const isBirthdateComplete = bdYear !== "" && bdMonth !== "" && bdDay !== "";
+  const birthdate = isBirthdateComplete ? `${bdYear}-${bdMonth}-${bdDay}` : "";
+
+  const onSubmit = async (data: SignupFormValues) => {
+    setErrorMessage("");
+    setIsSubmitting(true);
+
+    const { bdYear, bdMonth, bdDay, bio: bioValue, teamName, ...rest } = data;
+    const birthdate = `${bdYear}-${bdMonth}-${bdDay}`;
+    const payload = {
+      ...rest,
+      birthdate,
+      ...(bioValue ? { bio: bioValue } : {}),
+      ...(teamName ? { teamName } : {}),
+    };
+
+    console.log("Submitting payload:", payload);
+
+    try {
+      const response = await fetch("http://localhost:8000/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // accept the refresh token cookie set by the server
+        body: JSON.stringify(payload),
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        setErrorMessage(responseData.message ?? "Something went wrong. Please try again.");
+        return;
+      }
+
+      localStorage.setItem("accessToken", responseData.accessToken);
+      navigate("/");
+    } catch {
+      setErrorMessage("Network error. Please check your connection and try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-start justify-center py-12 px-4">
@@ -124,6 +213,7 @@ const Signup = () => {
               type="email"
               data-testid="email-input"
               autoComplete="email"
+              placeholder="your@email.com"
               className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
               {...register("email", {
                 required: "Email is required",
@@ -320,6 +410,54 @@ const Signup = () => {
             </span>
           </div>
 
+          {/* Birthdate */}
+          <div className="flex flex-col gap-1">
+            <span className="text-sm font-medium text-gray-700">Birthdate</span>
+            <div className="flex gap-3">
+
+              <select
+                data-testid="birthdate-year"
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 bg-white flex-1"
+                {...register("bdYear", { required: true })}
+              >
+                <option value="" disabled>Year</option>
+                {YEARS.map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+
+              <select
+                data-testid="birthdate-month"
+                disabled={bdYear === ""}
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 bg-white flex-1 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                {...register("bdMonth", { required: true })}
+              >
+                <option value="" disabled>Month</option>
+                {MONTHS.map((m) => (
+                  <option key={m.value} value={m.value}>{m.label}</option>
+                ))}
+              </select>
+
+              <select
+                data-testid="birthdate-day"
+                disabled={bdMonth === ""}
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 bg-white flex-1 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                {...register("bdDay", { required: true })}
+              >
+                <option value="" disabled>Day</option>
+                {dayOptions.map((d) => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+
+            </div>
+
+            {/* Show error only if any part failed validation after submit attempt */}
+            {(errors.bdYear || errors.bdMonth || errors.bdDay) && (
+              <span className="text-xs text-red-500">Please select a full date.</span>
+            )}
+          </div>
+
           {/* Addresses */}
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
@@ -420,9 +558,10 @@ const Signup = () => {
 
           <button
             type="submit"
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-lg text-sm transition-colors"
+            disabled={isSubmitting}
+            className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 disabled:cursor-not-allowed text-white font-semibold py-2 rounded-lg text-sm transition-colors"
           >
-            Sign Up
+            {isSubmitting ? "Signing up..." : "Sign Up"}
           </button>
         </form>
       </div>
