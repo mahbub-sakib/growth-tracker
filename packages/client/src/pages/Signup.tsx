@@ -187,8 +187,8 @@ const Signup = () => {
         return;
       }
 
-      localStorage.setItem("accessToken", responseData.accessToken);
-      navigate("/");
+      // localStorage.setItem("accessToken", responseData.accessToken);
+      navigate("/login");
     } catch {
       setErrorMessage("Network error. Please check your connection and try again.");
     } finally {
