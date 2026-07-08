@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import api from "../lib/Api";
 
 interface LoginFormValues {
   email: string;
@@ -28,24 +29,30 @@ const Login = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("http://localhost:8000/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include", // accept the refresh token cookie set by the server
-        body: JSON.stringify(data),
-      });
+      // const response = await fetch("http://localhost:8000/api/auth/login", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   credentials: "include", // accept the refresh token cookie set by the server
+      //   body: JSON.stringify(data),
+      // });
 
-      const responseData = await response.json();
+      // const responseData = await response.json();
 
-      if (!response.ok) {
-        setErrorMessage(responseData.message ?? "Something went wrong. Please try again.");
-        return;
-      }
+
+
+      // use axios instead typical fetch 
+      const { data: responseData } = await api.post("/auth/login", data);
+
+      // if (!response.ok) {
+      //   setErrorMessage(responseData.message ?? "Something went wrong. Please try again.");
+      //   return;
+      // }
 
       localStorage.setItem("accessToken", responseData.accessToken);
       navigate("/");
-    } catch {
-      setErrorMessage("Network error. Please check your connection and try again.");
+    } catch (err: any) {
+      const message = err.response?.data?.message ?? "Network error. Please check your connection and try again.";
+      setErrorMessage(message);
     } finally {
       setIsSubmitting(false);
     }

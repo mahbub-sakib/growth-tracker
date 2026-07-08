@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm, useFieldArray, useWatch } from "react-hook-form";
+import api from "../lib/Api";
 
 const ROLES = [
   { value: "LEARNER", label: "Learner" },
@@ -173,24 +174,28 @@ const Signup = () => {
     console.log("Submitting payload:", payload);
 
     try {
-      const response = await fetch("http://localhost:8000/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include", // accept the refresh token cookie set by the server
-        body: JSON.stringify(payload),
-      });
+      // const response = await fetch("http://localhost:8000/api/auth/signup", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   credentials: "include", // accept the refresh token cookie set by the server
+      //   body: JSON.stringify(payload),
+      // });
 
-      const responseData = await response.json();
+      // const responseData = await response.json();
 
-      if (!response.ok) {
-        setErrorMessage(responseData.message ?? "Something went wrong. Please try again.");
-        return;
-      }
+      // if (!response.ok) {
+      //   setErrorMessage(responseData.message ?? "Something went wrong. Please try again.");
+      //   return;
+      // }
+
+      // use axios instead typical fetch 
+      await api.post("/auth/signup", payload);
 
       // localStorage.setItem("accessToken", responseData.accessToken);
       navigate("/login");
-    } catch {
-      setErrorMessage("Network error. Please check your connection and try again.");
+    } catch (err: any) {
+      const message = err.response?.data?.message ?? "Network error. Please check your connection and try again.";
+      setErrorMessage(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -223,10 +228,14 @@ const Signup = () => {
                 },
                 validate: async (value) => {
                   try {
-                    const res = await fetch(
-                      `http://localhost:8000/api/auth/check-email?email=${encodeURIComponent(value)}`
-                    );
-                    const data = await res.json();
+                    // const res = await fetch(
+                    //   `http://localhost:8000/api/auth/check-email?email=${encodeURIComponent(value)}`
+                    // );
+                    // const data = await res.json();
+
+                    // use axios instead typical fetch 
+                    const { data } = await api.get(`/auth/check-email?email=${encodeURIComponent(value)}`);
+
                     if (!data.available) return "This email is already in use.";
                   } catch {
                     // silently ignore network errors on blur — submit will catch it anyway
