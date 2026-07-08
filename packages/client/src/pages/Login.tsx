@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import api from "../lib/Api";
+import { useAuth } from "@/context/Authcontext";
 
 interface LoginFormValues {
   email: string;
@@ -12,6 +13,8 @@ const Login = () => {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { setIsAuthenticated } = useAuth();
 
   const {
     register,
@@ -49,6 +52,7 @@ const Login = () => {
       // }
 
       localStorage.setItem("accessToken", responseData.accessToken);
+      setIsAuthenticated(true);
       navigate("/");
     } catch (err: any) {
       const message = err.response?.data?.message ?? "Network error. Please check your connection and try again.";
