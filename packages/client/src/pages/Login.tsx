@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import api from "../lib/Api";
-import { useAuth } from "@/context/Authcontext";
+import { useAuth } from "@/context/AuthContext";
 
 interface LoginFormValues {
   email: string;

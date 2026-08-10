@@ -191,7 +191,7 @@ const Signup = () => {
       // use axios instead typical fetch 
       await api.post("/auth/signup", payload);
 
-      // localStorage.setItem("accessToken", responseData.accessToken);
+
       navigate("/login");
     } catch (err: any) {
       const message = err.response?.data?.message ?? "Network error. Please check your connection and try again.";

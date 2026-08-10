@@ -10,7 +10,7 @@ import { AuthPayload } from "../middleware/requireAuth";
 const prisma = new PrismaClient();
 
 const SALT_ROUNDS = 10;
-const ACCESS_TOKEN_TTL = "15m";
+const ACCESS_TOKEN_TTL = "1m";
 const REFRESH_TOKEN_TTL = "7d";
 const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -36,10 +36,10 @@ const credentialsSchema = z.object({
 });
 
 const addressSchema = z.object({
-  label:   z.string().min(1).max(100),
+  label: z.string().min(1).max(100),
   street1: z.string().min(1).max(200),
   street2: z.string().max(200).optional(),
-  city:    z.string().min(1).max(100),
+  city: z.string().min(1).max(100),
   zipCode: z.number().int().positive(),
 });
 
@@ -47,15 +47,15 @@ const DEPARTMENTS = ["Engineering", "Product", "Design", "Marketing", "Operation
 
 const signupSchema = z
   .object({
-    email:           z.string().email(),
-    password:        z.string().min(8),
-    role:            z.enum(["LEARNER", "MANAGER"]),
-    department:      z.enum(DEPARTMENTS),
+    email: z.string().email(),
+    password: z.string().min(8),
+    role: z.enum(["LEARNER", "MANAGER"]),
+    department: z.enum(DEPARTMENTS),
     experienceLevel: z.enum(["JUNIOR", "MID", "SENIOR"]),
-    teamName:        z.string().min(1).max(100).optional(),
-    bio:             z.string().max(250).optional(),
-    birthdate:       z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (expected YYYY-MM-DD)"),
-    addresses:       z.array(addressSchema).optional().default([]),
+    teamName: z.string().min(1).max(100).optional(),
+    bio: z.string().max(250).optional(),
+    birthdate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (expected YYYY-MM-DD)"),
+    addresses: z.array(addressSchema).optional().default([]),
   })
   .refine(data => data.role !== "MANAGER" || !!data.teamName?.trim(), {
     message: "Team name is required for managers",
@@ -107,15 +107,15 @@ export async function signup(req: Request, res: Response): Promise<void> {
   res.status(201).json({
     accessToken,
     user: {
-      id:              user.id,
-      email:           user.email,
-      role:            user.role,
-      department:      user.department,
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      department: user.department,
       experienceLevel: user.experienceLevel,
-      teamName:        user.teamName,
-      bio:             user.bio,
-      birthdate:       user.birthdate,
-      addresses:       user.addresses,
+      teamName: user.teamName,
+      bio: user.bio,
+      birthdate: user.birthdate,
+      addresses: user.addresses,
     },
   });
 }
@@ -209,16 +209,16 @@ export async function me(req: Request, res: Response): Promise<void> {
   const user = await prisma.user.findUnique({
     where: { id: req.user!.sub },
     select: {
-      id:              true,
-      email:           true,
-      role:            true,
-      department:      true,
+      id: true,
+      email: true,
+      role: true,
+      department: true,
       experienceLevel: true,
-      teamName:        true,
-      bio:             true,
-      birthdate:       true,
-      createdAt:       true,
-      addresses:       true,
+      teamName: true,
+      bio: true,
+      birthdate: true,
+      createdAt: true,
+      addresses: true,
     },
   });
 
