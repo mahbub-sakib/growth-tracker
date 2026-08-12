@@ -10,7 +10,7 @@ import { AuthPayload } from "../middleware/requireAuth";
 const prisma = new PrismaClient();
 
 const SALT_ROUNDS = 10;
-const ACCESS_TOKEN_TTL = "1m";
+const ACCESS_TOKEN_TTL = "15m";
 const REFRESH_TOKEN_TTL = "7d";
 const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 

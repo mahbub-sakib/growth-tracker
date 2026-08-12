@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 setIsAuthenticated(false);
             } finally {
                 setIsLoading(false);
-                console.log("verifyToken finished");
+                // console.log("verifyToken finished");
             }
         };
 

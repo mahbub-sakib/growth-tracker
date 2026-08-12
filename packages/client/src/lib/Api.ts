@@ -28,11 +28,11 @@ api.interceptors.response.use(
     async (error: AxiosError) => {
         const originalRequest: any = error.config;
 
-        console.log("Interceptor hit");
-        console.log("Status:", error.response?.status);
-        console.log("URL:", error.config?.url);
-        console.log("Already retried:", error.config?._retry);
+        // console.log("Interceptor hit");
+        // console.log("Status:", error.response?.status);
+        // console.log("URL:", error.config?.url);
         // console.log("Already retried:", error.config?._retry);
+
 
         // const originalRequest = error.config;
 
@@ -85,9 +85,9 @@ api.interceptors.response.use(
             return await api(originalRequest);
         } catch (refreshError: any) {
             //     // Refresh token is also expired — log the user out
-            console.log("Refresh failed:");
-            console.log("Status:", refreshError.response?.status);
-            console.log("Message:", refreshError.response?.data);
+            // console.log("Refresh failed:");
+            // console.log("Status:", refreshError.response?.status);
+            // console.log("Message:", refreshError.response?.data);
             localStorage.removeItem("accessToken");
             window.location.href = "/login";
             throw error;

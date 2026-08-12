@@ -3,14 +3,22 @@ import Home from '@/pages/Home';
 import Login from '@/pages/Login';
 import Signup from '@/pages/Signup';
 import PrivateRoute from "./components/PrivateRoute";
+import About from "./pages/About";
+import Settings from "./pages/Settings";
+import DashboardLayout from './layouts/DashboardLayout';
 
 function App() {
   return (
     <div className="w-full bg-neutral-50">
       <Routes>
         <Route element={<PrivateRoute />}>
-          <Route path="/" element={<Home />} />
-          {/* add more protected routes here */}
+          <Route element={<DashboardLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/settings" element={<Settings />} />
+
+            {/* Add more protected routes here */}
+          </Route>
         </Route>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
