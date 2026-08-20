@@ -4,6 +4,7 @@ import Login from '@/pages/Login';
 import Signup from '@/pages/Signup';
 import PrivateRoute from "./components/PrivateRoute";
 import About from "./pages/About";
+import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
 import DashboardLayout from './layouts/DashboardLayout';
 
@@ -13,7 +14,8 @@ function App() {
       <Routes>
         <Route element={<PrivateRoute />}>
           <Route element={<DashboardLayout />}>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/about" element={<About />} />
             <Route path="/settings" element={<Settings />} />
 

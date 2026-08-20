@@ -36,7 +36,7 @@ interface Address {
   street1: string;
   street2: string;
   city: string;
-  zipCode: string;
+  zipCode: number;
 }
 
 interface SignupFormValues {
@@ -557,7 +557,9 @@ const Signup = () => {
                       data-testid="address-zip-input"
                       placeholder="12345"
                       className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-                      {...register(`addresses.${index}.zipCode`)}
+                      {...register(`addresses.${index}.zipCode`, {
+                        valueAsNumber: true,
+                      })}
                     />
                   </div>
                 </div>
