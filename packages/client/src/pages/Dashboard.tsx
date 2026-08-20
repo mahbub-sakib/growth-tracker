@@ -28,12 +28,30 @@ const Dashboard = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(5);
+
+    const [total, setTotal] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await api.get<UsersResponse>('/users');
+                setLoading(true);
+                setError('');
+
+                const response = await api.get<UsersResponse>('/users', {
+                    params: {
+                        page,
+                        pageSize,
+                    },
+                });
 
                 setUsers(response.data.users);
+
+                setTotal(response.data.pagination.total);
+                setTotalPages(response.data.pagination.totalPages);
+
                 console.log(response);
             } catch (error) {
                 console.error('Failed to fetch users:', error);
@@ -44,7 +62,7 @@ const Dashboard = () => {
         };
 
         fetchUsers();
-    }, []);
+    }, [page, pageSize]);
 
     return (
         <div>
@@ -123,6 +141,99 @@ const Dashboard = () => {
                             ))}
                         </tbody>
                     </table>
+
+                    {/* Pagination */}
+                    <div className="flex items-center justify-between px-4 py-3 border-t">
+                        {/* Left side */}
+                        <div className="text-sm text-neutral-600">
+                            Page {page} of {totalPages} ({total} users)
+                        </div>
+
+                        {/* Right side */}
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm text-neutral-600">
+                                Rows per page
+                            </span>
+
+                            <select
+                                value={pageSize}
+                                onChange={(event) => {
+                                    setPageSize(Number(event.target.value));
+                                    setPage(1);
+                                }}
+                                className="border rounded-md px-2 py-1 text-sm bg-white"
+                            >
+                                <option value={5}>5</option>
+                                <option value={10}>10</option>
+                                <option value={20}>20</option>
+                                <option value={50}>50</option>
+                            </select>
+
+                            <button
+                                onClick={() => setPage(1)}
+                                disabled={page === 1}
+                                className="px-3 py-1 border rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                First
+                            </button>
+
+                            <button
+                                onClick={() => setPage((prev) => prev - 1)}
+                                disabled={page === 1}
+                                className="px-3 py-1 border rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Previous
+                            </button>
+
+                            {Array.from(
+                                {
+                                    length: Math.min(5, totalPages),
+                                },
+                                (_, index) => {
+                                    let pageNumber;
+
+                                    if (totalPages <= 5) {
+                                        pageNumber = index + 1;
+                                    } else if (page <= 3) {
+                                        pageNumber = index + 1;
+                                    } else if (page >= totalPages - 2) {
+                                        pageNumber = totalPages - 4 + index;
+                                    } else {
+                                        pageNumber = page - 2 + index;
+                                    }
+
+                                    return (
+                                        <button
+                                            key={pageNumber}
+                                            onClick={() => setPage(pageNumber)}
+                                            className={`px-3 py-1 border rounded-md text-sm ${pageNumber === page
+                                                    ? 'bg-neutral-800 text-white'
+                                                    : 'bg-white text-neutral-700 hover:bg-neutral-50'
+                                                }`}
+                                        >
+                                            {pageNumber}
+                                        </button>
+                                    );
+                                }
+                            )}
+
+                            <button
+                                onClick={() => setPage((prev) => prev + 1)}
+                                disabled={page === totalPages}
+                                className="px-3 py-1 border rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Next
+                            </button>
+
+                            <button
+                                onClick={() => setPage(totalPages)}
+                                disabled={page === totalPages}
+                                className="px-3 py-1 border rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Last
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
