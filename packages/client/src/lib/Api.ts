@@ -50,12 +50,12 @@ api.interceptors.response.use(
 
         try {
             //     // withCredentials sends the refresh token cookie automatically
-            console.log("Attempting refresh...");
+            // console.log("Attempting refresh...");
             // const { data } = await api.post("/auth/refresh");
 
             if (!isRefreshing) {
                 isRefreshing = true;
-                console.log("Attempting refresh...2");
+                // console.log("Attempting refresh...2");
                 refreshPromise = api
                     .post("/auth/refresh")
                     .then(({ data }) => {
