@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from "../lib/Api";
+import { useQuery } from '@tanstack/react-query';
 
 interface User {
     id: string;
@@ -24,45 +25,71 @@ interface UsersResponse {
 }
 
 const Dashboard = () => {
-    const [users, setUsers] = useState<User[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+    // const [users, setUsers] = useState<User[]>([]);
+    // const [loading, setLoading] = useState(true);
+    // const [error, setError] = useState('');
 
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
 
-    const [total, setTotal] = useState(0);
-    const [totalPages, setTotalPages] = useState(0);
+    // const [total, setTotal] = useState(0);
+    // const [totalPages, setTotalPages] = useState(0);
 
-    useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                setLoading(true);
-                setError('');
+    // useEffect(() => {
+    //     const fetchUsers = async () => {
+    //         try {
+    //             setLoading(true);
+    //             setError('');
 
-                const response = await api.get<UsersResponse>('/users', {
-                    params: {
-                        page,
-                        pageSize,
-                    },
-                });
+    //             const response = await api.get<UsersResponse>('/users', {
+    //                 params: {
+    //                     page,
+    //                     pageSize,
+    //                 },
+    //             });
 
-                setUsers(response.data.users);
+    //             setUsers(response.data.users);
 
-                setTotal(response.data.pagination.total);
-                setTotalPages(response.data.pagination.totalPages);
+    //             setTotal(response.data.pagination.total);
+    //             setTotalPages(response.data.pagination.totalPages);
 
-                console.log(response);
-            } catch (error) {
-                console.error('Failed to fetch users:', error);
-                setError('Failed to load users.');
-            } finally {
-                setLoading(false);
-            }
-        };
+    //             console.log(response);
+    //         } catch (error) {
+    //             console.error('Failed to fetch users:', error);
+    //             setError('Failed to load users.');
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     };
 
-        fetchUsers();
-    }, [page, pageSize]);
+    //     fetchUsers();
+    // }, [page, pageSize]);
+
+    const {
+        data,
+        isLoading,
+        isFetching,
+        isError,
+    } = useQuery({
+        queryKey: ['users', page, pageSize],
+
+        queryFn: async () => {
+            const response = await api.get<UsersResponse>('/users', {
+                params: {
+                    page,
+                    pageSize,
+                },
+            });
+
+            return response.data;
+        },
+
+        staleTime: 5 * 60 * 1000,
+    });
+
+    const users = data?.users ?? [];
+    const total = data?.pagination.total ?? 0;
+    const totalPages = data?.pagination.totalPages ?? 0;
 
     return (
         <div>
@@ -76,19 +103,19 @@ const Dashboard = () => {
                 </p>
             </div>
 
-            {loading && (
+            {isLoading && (
                 <p className="text-neutral-600">
                     Loading users...
                 </p>
             )}
 
-            {error && (
+            {isError && (
                 <p className="text-red-500">
-                    {error}
+                    {isError}
                 </p>
             )}
 
-            {!loading && !error && (
+            {!isLoading && !isError && (
                 <div className="bg-white border rounded-lg overflow-hidden">
                     <table className="w-full text-left">
                         <thead className="bg-neutral-50 border-b">

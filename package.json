@@ -25,5 +25,8 @@
       "prisma",
       "msw"
     ]
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.102.6"
   }
 }
