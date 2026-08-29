@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from "../lib/Api";
 import { useQuery } from '@tanstack/react-query';
+import UserTableSkeleton from '../components/UserTableSkeleton';
 
 interface User {
     id: string;
@@ -103,19 +104,19 @@ const Dashboard = () => {
                 </p>
             </div>
 
-            {isLoading && (
+            {/* {isLoading && (
                 <p className="text-neutral-600">
                     Loading users...
                 </p>
-            )}
+            )} */}
 
             {isError && (
                 <p className="text-red-500">
-                    {isError}
+                    Failed to load users.
                 </p>
             )}
 
-            {!isLoading && !isError && (
+            {!isError && (
                 <div className="bg-white border rounded-lg overflow-hidden">
                     <table className="w-full text-left">
                         <thead className="bg-neutral-50 border-b">
@@ -143,29 +144,33 @@ const Dashboard = () => {
                         </thead>
 
                         <tbody className="divide-y">
-                            {users.map((user) => (
-                                <tr key={user.id}>
-                                    <td className="px-6 py-4 text-sm">
-                                        {user.email}
-                                    </td>
+                            {isLoading ? (
+                                <UserTableSkeleton rows={pageSize} />
+                            ) : (
+                                users.map((user) => (
+                                    <tr key={user.id}>
+                                        <td className="px-6 py-4 text-sm">
+                                            {user.email}
+                                        </td>
 
-                                    <td className="px-6 py-4 text-sm">
-                                        {user.role}
-                                    </td>
+                                        <td className="px-6 py-4 text-sm">
+                                            {user.role}
+                                        </td>
 
-                                    <td className="px-6 py-4 text-sm">
-                                        {user.department}
-                                    </td>
+                                        <td className="px-6 py-4 text-sm">
+                                            {user.department}
+                                        </td>
 
-                                    <td className="px-6 py-4 text-sm">
-                                        {user.experienceLevel}
-                                    </td>
+                                        <td className="px-6 py-4 text-sm">
+                                            {user.experienceLevel}
+                                        </td>
 
-                                    <td className="px-6 py-4 text-sm">
-                                        {user.teamName}
-                                    </td>
-                                </tr>
-                            ))}
+                                        <td className="px-6 py-4 text-sm">
+                                            {user.teamName}
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
 
