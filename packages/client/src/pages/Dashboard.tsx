@@ -30,8 +30,20 @@ const Dashboard = () => {
     // const [loading, setLoading] = useState(true);
     // const [error, setError] = useState('');
 
-    const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const [page, setPage] = useState(() => {
+        const savedPage = localStorage.getItem('usersPage');
+        return savedPage ? Number(savedPage) : 1;
+    });
+
+    const [pageSize, setPageSize] = useState(() => {
+        const savedPageSize = localStorage.getItem('usersPageSize');
+        return savedPageSize ? Number(savedPageSize) : 10;
+    });
+
+    useEffect(() => {
+        localStorage.setItem('usersPage', String(page));
+        localStorage.setItem('usersPageSize', String(pageSize));
+    }, [page, pageSize]);
 
     // const [total, setTotal] = useState(0);
     // const [totalPages, setTotalPages] = useState(0);
@@ -86,7 +98,7 @@ const Dashboard = () => {
         },
         placeholderData: keepPreviousData,
 
-        staleTime: 5 * 60 * 1000,
+        staleTime: 1 * 60 * 1000,
     });
 
     const users = data?.users ?? [];
