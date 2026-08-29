@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from "../lib/Api";
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import UserTableSkeleton from '../components/UserTableSkeleton';
 
 interface User {
@@ -84,6 +84,7 @@ const Dashboard = () => {
 
             return response.data;
         },
+        placeholderData: keepPreviousData,
 
         staleTime: 5 * 60 * 1000,
     });
@@ -103,6 +104,12 @@ const Dashboard = () => {
                     Overview of users
                 </p>
             </div>
+
+            {isFetching && (
+                <p className="text-sm text-neutral-500 mb-2">
+                    Fetching users...
+                </p>
+            )}
 
             {/* {isLoading && (
                 <p className="text-neutral-600">
