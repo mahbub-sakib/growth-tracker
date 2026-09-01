@@ -40,10 +40,32 @@ const Dashboard = () => {
         return savedPageSize ? Number(savedPageSize) : 10;
     });
 
+    // Search input 
+    const [search, setSearch] = useState('');
+
+    // Debounced search value 
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+
     useEffect(() => {
         localStorage.setItem('usersPage', String(page));
         localStorage.setItem('usersPageSize', String(pageSize));
     }, [page, pageSize]);
+
+    // Debounce search by 500ms 
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            const trimmedSearch = search.trim();
+
+            setDebouncedSearch(trimmedSearch);
+
+            if (trimmedSearch !== debouncedSearch) {
+                setPage(1);
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [search]);
+
 
     // const [total, setTotal] = useState(0);
     // const [totalPages, setTotalPages] = useState(0);
@@ -84,16 +106,19 @@ const Dashboard = () => {
         isFetching,
         isError,
     } = useQuery({
-        queryKey: ['users', page, pageSize],
+        queryKey: ['users', page, pageSize, debouncedSearch],
 
         queryFn: async () => {
             const response = await api.get<UsersResponse>('/users', {
                 params: {
                     page,
                     pageSize,
+                    ...(debouncedSearch && {
+                        search: debouncedSearch,
+                    }),
                 },
             });
-
+            console.log(response);
             return response.data;
         },
         placeholderData: keepPreviousData,
@@ -105,6 +130,8 @@ const Dashboard = () => {
     const total = data?.pagination.total ?? 0;
     const totalPages = data?.pagination.totalPages ?? 0;
 
+
+
     return (
         <div>
             <div className="mb-6">
@@ -115,6 +142,16 @@ const Dashboard = () => {
                 <p className="text-sm text-neutral-500 mt-1">
                     Overview of users
                 </p>
+            </div>
+
+            {/* Search */}
+            <div className="mb-4">
+                <input
+                    type="text"
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                    placeholder="Search by email or team name..."
+                    className="w-full max-w-md border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-300" />
             </div>
 
             {isFetching && (
