@@ -45,6 +45,9 @@ const Dashboard = () => {
 
     // Debounced search value 
     const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [role, setRole] = useState('');
+    const [department, setDepartment] = useState('');
+    const [experienceLevel, setExperienceLevel] = useState('');
 
     useEffect(() => {
         localStorage.setItem('usersPage', String(page));
@@ -103,10 +106,12 @@ const Dashboard = () => {
     const {
         data,
         isLoading,
+        isPending,
         isFetching,
+        status,
         isError,
     } = useQuery({
-        queryKey: ['users', page, pageSize, debouncedSearch],
+        queryKey: ['users', page, pageSize, debouncedSearch, role, department, experienceLevel],
 
         queryFn: async () => {
             const response = await api.get<UsersResponse>('/users', {
@@ -116,6 +121,9 @@ const Dashboard = () => {
                     ...(debouncedSearch && {
                         search: debouncedSearch,
                     }),
+                    ...(role && { role, }),
+                    ...(department && { department, }),
+                    ...(experienceLevel && { experienceLevel, }),
                 },
             });
             console.log(response);
@@ -130,7 +138,14 @@ const Dashboard = () => {
     const total = data?.pagination.total ?? 0;
     const totalPages = data?.pagination.totalPages ?? 0;
 
-
+    const handleClearFilters = () => {
+        setSearch('');
+        setRole('');
+        setDepartment('');
+        setExperienceLevel('');
+        setPage(1);
+    };
+    const hasFilters = search.trim() !== '' || role !== '' || department !== '' || experienceLevel !== '';
 
     return (
         <div>
@@ -145,32 +160,110 @@ const Dashboard = () => {
             </div>
 
             {/* Search */}
-            <div className="mb-4">
-                <input
-                    type="text"
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
-                    placeholder="Search by email or team name..."
-                    className="w-full max-w-md border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-300" />
+            <div className="bg-white border rounded-lg p-4 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Search */}
+                    <div className="lg:col-span-4">
+                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                            Search
+                        </label>
+                        <input
+                            type="text"
+                            value={search}
+                            onChange={(event) => setSearch(event.target.value)}
+                            placeholder="Search by email or team name..."
+                            className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-300" />
+                    </div>
+                    {/* Role */}
+                    <div>
+                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                            Role
+                        </label>
+                        <select
+                            value={role}
+                            onChange={(event) => {
+                                setRole(event.target.value);
+                                setPage(1);
+                            }}
+                            className="w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-neutral-300" >
+                            <option value="">All Roles</option>
+                            <option value="LEARNER">LEARNER</option>
+                            <option value="MANAGER">MANAGER</option>
+                        </select>
+                    </div>
+                    {/* Department */}
+                    <div>
+                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                            Department
+                        </label>
+                        <select
+                            value={department}
+                            onChange={(event) => {
+                                setDepartment(event.target.value);
+                                setPage(1);
+                            }}
+                            className="w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-neutral-300" >
+                            <option value="">All Departments</option>
+                            <option value="Engineering">Engineering</option>
+                            <option value="Product">Product</option>
+                            <option value="Design">Design</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Operations">Operations</option>
+                            <option value="HR">HR</option>
+                            <option value="Other">Other</option>
+                        </select> </div>
+                    {/* Experience Level */}
+                    <div>
+                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                            Experience Level
+                        </label>
+                        <select
+                            value={experienceLevel}
+                            onChange={(event) => {
+                                setExperienceLevel(event.target.value);
+                                setPage(1);
+                            }}
+                            className="w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-neutral-300" >
+                            <option value="">All Levels</option>
+                            <option value="JUNIOR">JUNIOR</option>
+                            <option value="MID">MID</option>
+                            <option value="SENIOR">SENIOR</option>
+                        </select> </div>
+                    {/* Clear Filters */}
+                    <div className="flex items-end">
+                        <button
+                            onClick={handleClearFilters}
+                            disabled={!hasFilters}
+                            className="w-full border rounded-md px-3 py-2 text-sm text-neutral-700 bg-white hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed" >
+                            Clear Filters
+                        </button>
+                    </div>
+                </div>
             </div>
 
             {isFetching && (
-                <p className="text-sm text-neutral-500 mb-2">
+                <p className="text-sm text-neutral-500 mb-2 bg-green-500">
                     Fetching users...
                 </p>
             )}
 
-            {/* {isLoading && (
-                <p className="text-neutral-600">
-                    Loading users...
+            {isPending && (
+                <p className="text-neutral-600 bg-red-500">
+                    Pending users...
+                    <span>testing</span>
                 </p>
-            )} */}
+
+            )}
 
             {isError && (
                 <p className="text-red-500">
                     Failed to load users.
                 </p>
             )}
+
+            <p className="text-orange-500">
+                Current status: {status}
+            </p>
 
             {!isError && (
                 <div className="bg-white border rounded-lg overflow-hidden">
@@ -202,7 +295,7 @@ const Dashboard = () => {
                         <tbody className="divide-y">
                             {isLoading ? (
                                 <UserTableSkeleton rows={pageSize} />
-                            ) : (
+                            ) : users.length > 0 ? (
                                 users.map((user) => (
                                     <tr key={user.id}>
                                         <td className="px-6 py-4 text-sm">
@@ -226,6 +319,14 @@ const Dashboard = () => {
                                         </td>
                                     </tr>
                                 ))
+                            ) : (
+                                <tr>
+                                    <td
+                                        colSpan={5}
+                                        className="px-6 py-8 text-center text-sm text-neutral-500" >
+                                        No users found.
+                                    </td>
+                                </tr>
                             )}
                         </tbody>
                     </table>

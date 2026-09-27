@@ -7,6 +7,7 @@ import About from "./pages/About";
 import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
 import DashboardLayout from './layouts/DashboardLayout';
+import Profile from './pages/Profile';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/about" element={<About />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/profile" element={<Profile />} />
 
             {/* Add more protected routes here */}
           </Route>

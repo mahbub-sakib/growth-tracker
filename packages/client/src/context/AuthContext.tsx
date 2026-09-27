@@ -1,6 +1,9 @@
 import { createContext, useContext, useEffect, useState } from "react";
 // import { useNavigate } from "react-router-dom";
 import api from "../lib/Api";
+import { useDispatch } from "react-redux";
+import type { AppDispatch } from "@/store/store";
+import { setUser, clearUser } from "@/store/userSlice";
 
 interface AuthContextType {
     isAuthenticated: boolean;
@@ -16,6 +19,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [isLoading, setIsLoading] = useState(true);
     // const navigate = useNavigate();
 
+    const dispatch = useDispatch<AppDispatch>();
+
     useEffect(() => {
         const verifyToken = async () => {
             const token = localStorage.getItem("accessToken");
@@ -30,11 +35,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 // await api.get("/auth/me", {
                 //     headers: { Authorization: `Bearer ${token}` },
                 // });
-                await api.get("/auth/me");
+                const response = await api.get("/auth/me");
+
+                dispatch(setUser(response.data.user));
                 setIsAuthenticated(true);
             } catch {
                 // Token is invalid or expired
                 localStorage.removeItem("accessToken");
+                dispatch(clearUser());
                 setIsAuthenticated(false);
             } finally {
                 setIsLoading(false);
@@ -52,6 +60,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             // proceed with local logout even if server call fails
         } finally {
             localStorage.removeItem("accessToken");
+            dispatch(clearUser());
             setIsAuthenticated(false);
             window.location.href = "/login";
         }
