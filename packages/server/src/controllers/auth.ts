@@ -43,6 +43,10 @@ const addressSchema = z.object({
   zipCode: z.number().int().positive(),
 });
 
+const updateProfileSchema = z.object({
+  email: z.string().email(),
+});
+
 const DEPARTMENTS = ["Engineering", "Product", "Design", "Marketing", "Operations", "HR", "Other"] as const;
 
 const signupSchema = z
@@ -246,4 +250,64 @@ export async function checkEmail(req: Request, res: Response): Promise<void> {
 
   const existing = await prisma.user.findUnique({ where: { email: parsed.data }, select: { id: true } });
   res.json({ available: existing === null });
+}
+
+export async function updateProfile(req: Request, res: Response): Promise<void> {
+  try {
+    const result = updateProfileSchema.safeParse(req.body);
+
+    if (!result.success) {
+      res.status(400).json({
+        message: "Invalid email",
+      });
+      return;
+    }
+
+    const { email } = result.data;
+
+    // Check whether another user already has this email
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    if (existingUser && existingUser.id !== req.user!.sub) {
+      res.status(409).json({
+        message: "Email is already in use",
+      });
+      return;
+    }
+
+    const user = await prisma.user.update({
+      where: {
+        id: req.user!.sub,
+      },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        department: true,
+        experienceLevel: true,
+        teamName: true,
+        bio: true,
+        birthdate: true,
+        createdAt: true,
+        addresses: true,
+      },
+      data: {
+        email,
+      },
+    });
+
+    res.json({
+      user,
+    });
+  } catch (error) {
+    console.error("Failed to update profile:", error);
+
+    res.status(500).json({
+      message: "Failed to update profile",
+    });
+  }
 }
