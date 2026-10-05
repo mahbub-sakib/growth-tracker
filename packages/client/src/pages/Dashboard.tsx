@@ -361,7 +361,7 @@ const Dashboard = () => {
                             <button
                                 onClick={() => setPage(1)}
                                 disabled={page === 1}
-                                className="px-3 py-1 border rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-3 py-1 border rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                             >
                                 First
                             </button>
@@ -369,7 +369,7 @@ const Dashboard = () => {
                             <button
                                 onClick={() => setPage((prev) => prev - 1)}
                                 disabled={page === 1}
-                                className="px-3 py-1 border rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-3 py-1 border rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                             >
                                 Previous
                             </button>
@@ -395,7 +395,7 @@ const Dashboard = () => {
                                         <button
                                             key={pageNumber}
                                             onClick={() => setPage(pageNumber)}
-                                            className={`px-3 py-1 border rounded-md text-sm ${pageNumber === page
+                                            className={`px-3 py-1 border rounded-md text-sm cursor-pointer ${pageNumber === page
                                                 ? 'bg-neutral-800 text-white'
                                                 : 'bg-white text-neutral-700 hover:bg-neutral-50'
                                                 }`}
@@ -409,7 +409,7 @@ const Dashboard = () => {
                             <button
                                 onClick={() => setPage((prev) => prev + 1)}
                                 disabled={page === totalPages}
-                                className="px-3 py-1 border rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-3 py-1 border rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                             >
                                 Next
                             </button>
@@ -417,7 +417,7 @@ const Dashboard = () => {
                             <button
                                 onClick={() => setPage(totalPages)}
                                 disabled={page === totalPages}
-                                className="px-3 py-1 border rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-3 py-1 border rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                             >
                                 Last
                             </button>

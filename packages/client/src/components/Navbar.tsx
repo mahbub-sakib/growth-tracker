@@ -60,7 +60,7 @@ const Navbar = () => {
                 {/* User Circle */}
                 <button
                     onClick={() => setIsOpen(!isOpen)}
-                    className="w-10 h-10 rounded-full bg-neutral-800 text-white flex items-center justify-center font-semibold"
+                    className="w-10 h-10 rounded-full bg-neutral-800 text-white flex items-center justify-center font-semibold cursor-pointer"
                 >
                     {firstLetter}
                 </button>
@@ -75,7 +75,10 @@ const Navbar = () => {
                                     item.action();
                                     setIsOpen(false);
                                 }}
-                                className="w-full text-left px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100"
+                                className={`w-full text-left px-4 py-2 text-sm cursor-pointer ${item.label === "Logout"
+                                    ? "text-red-600 hover:bg-red-50"
+                                    : "text-neutral-700 hover:bg-neutral-100"
+                                    }`}
                             >
                                 {item.label}
                             </button>
