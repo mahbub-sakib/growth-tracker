@@ -3,6 +3,9 @@ import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import api from "../lib/Api";
 import { useAuth } from "@/context/AuthContext";
+import { useDispatch } from "react-redux";
+import type { AppDispatch } from "@/store/store";
+import { setUser } from "@/store/userSlice";
 
 interface LoginFormValues {
   email: string;
@@ -13,6 +16,8 @@ const Login = () => {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const dispatch = useDispatch<AppDispatch>();
 
   const { setIsAuthenticated } = useAuth();
 
@@ -51,6 +56,7 @@ const Login = () => {
       //   return;
       // }
 
+      dispatch(setUser(responseData.user));
       localStorage.setItem("accessToken", responseData.accessToken);
       setIsAuthenticated(true);
       navigate("/");
