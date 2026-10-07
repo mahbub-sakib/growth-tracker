@@ -63,3 +63,12 @@ model RefreshToken {
   expiresAt DateTime
   createdAt DateTime @default(now())
 }
+
+model FavouriteUser {
+  id              String   @id @default(cuid())
+  userId          String
+  favouriteUserId String
+  createdAt       DateTime @default(now())
+
+  @@unique([userId, favouriteUserId])
+}

@@ -6,6 +6,7 @@ import swaggerJsdoc from "swagger-jsdoc";
 import { authRouter } from "./routes/auth";
 import { usersRouter } from "./routes/users";
 import { swaggerOptions } from "./swagger";
+import { favouriteUsersRouter } from "./routes/favouriteUsers";
 
 export const app = express();
 
@@ -18,6 +19,7 @@ app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use("/api/auth", authRouter);
 app.use("/api/users", usersRouter);
+app.use("/api/favourite-users", favouriteUsersRouter);
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });

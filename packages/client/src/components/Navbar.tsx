@@ -9,6 +9,10 @@ const Navbar = () => {
     const navigate = useNavigate();
 
     const user = useSelector((state: RootState) => state.user.user);
+    const favouriteCount = useSelector(
+        (state: RootState) =>
+            state.favouriteUsers.favouriteUserIds.length
+    );
 
     const [isOpen, setIsOpen] = useState(false);
 
@@ -16,6 +20,10 @@ const Navbar = () => {
         {
             label: "Profile",
             action: () => navigate("/profile"),
+        },
+        {
+            label: "Favourites (" + favouriteCount + ")",
+            action: () => navigate("/favourites"),
         },
         {
             label: "Logout",
@@ -39,6 +47,13 @@ const Navbar = () => {
     //             >
     //                 Profile
     //             </button>
+
+    //     <button
+    //     onClick={() => navigate("/favourites")}
+    //     className="bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-semibold px-4 py-2 rounded-lg text-sm transition-colors"
+    // >
+    //     Favorites ({favouriteCount})
+    // </button>
 
     //             <button
     //                 onClick={logout}

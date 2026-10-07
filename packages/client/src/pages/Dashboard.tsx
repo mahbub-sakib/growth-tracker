@@ -2,6 +2,13 @@ import { useEffect, useState } from 'react';
 import api from "../lib/Api";
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import UserTableSkeleton from '../components/UserTableSkeleton';
+import { useDispatch, useSelector } from "react-redux";
+import type { RootState, AppDispatch } from "../store/store";
+import {
+    setFavouriteUsers,
+    addFavouriteUser,
+    removeFavouriteUser,
+} from "../store/favouriteUsersSlice";
 
 interface User {
     id: string;
@@ -29,6 +36,13 @@ const Dashboard = () => {
     // const [users, setUsers] = useState<User[]>([]);
     // const [loading, setLoading] = useState(true);
     // const [error, setError] = useState('');
+
+    const dispatch = useDispatch<AppDispatch>();
+
+    const favouriteUserIds = useSelector(
+        (state: RootState) =>
+            state.favouriteUsers.favouriteUserIds
+    );
 
     const [page, setPage] = useState(() => {
         const savedPage = localStorage.getItem('usersPage');
@@ -69,6 +83,27 @@ const Dashboard = () => {
         return () => clearTimeout(timer);
     }, [search]);
 
+
+    useEffect(() => {
+        const fetchFavouriteUsers = async () => {
+            try {
+                const response = await api.get("/favourite-users");
+
+                const favouriteIds = response.data.users.map(
+                    (user: User) => user.id
+                );
+
+                dispatch(setFavouriteUsers(favouriteIds));
+            } catch (error) {
+                console.error(
+                    "Failed to load favourite users:",
+                    error
+                );
+            }
+        };
+
+        fetchFavouriteUsers();
+    }, [dispatch]);
 
     // const [total, setTotal] = useState(0);
     // const [totalPages, setTotalPages] = useState(0);
@@ -146,6 +181,32 @@ const Dashboard = () => {
         setPage(1);
     };
     const hasFilters = search.trim() !== '' || role !== '' || department !== '' || experienceLevel !== '';
+
+    const handleFavouriteToggle = async (userId: string) => {
+        const isFavourite =
+            favouriteUserIds.includes(userId);
+
+        try {
+            if (isFavourite) {
+                await api.delete(
+                    `/favourite-users/${userId}`
+                );
+
+                dispatch(removeFavouriteUser(userId));
+            } else {
+                await api.post("/favourite-users", {
+                    favouriteUserId: userId,
+                });
+
+                dispatch(addFavouriteUser(userId));
+            }
+        } catch (error) {
+            console.error(
+                "Failed to update favourite user:",
+                error
+            );
+        }
+    };
 
     return (
         <div>
@@ -289,6 +350,9 @@ const Dashboard = () => {
                                 <th className="px-6 py-3 text-sm font-medium">
                                     Team
                                 </th>
+                                <th className="px-6 py-3 text-sm font-medium">
+                                    Favorite
+                                </th>
                             </tr>
                         </thead>
 
@@ -317,12 +381,25 @@ const Dashboard = () => {
                                         <td className="px-6 py-4 text-sm">
                                             {user.teamName}
                                         </td>
+                                        <td className="px-6 py-4 text-sm">
+                                            <button
+                                                onClick={() => handleFavouriteToggle(user.id)}
+                                                className="text-xl"
+                                                title={
+                                                    favouriteUserIds.includes(user.id)
+                                                        ? "Remove from favorites"
+                                                        : "Add to favorites"
+                                                }
+                                            >
+                                                {favouriteUserIds.includes(user.id) ? "★" : "☆"}
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
                                     <td
-                                        colSpan={5}
+                                        colSpan={6}
                                         className="px-6 py-8 text-center text-sm text-neutral-500" >
                                         No users found.
                                     </td>
