@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 const Navbar = () => {
     const { logout } = useAuth();
     const navigate = useNavigate();
 
-    const user = useSelector((state: RootState) => state.user.user);
-    const favouriteCount = useSelector(
-        (state: RootState) =>
+    const user = useAppSelector((state) => state.user.user);
+    const favouriteCount = useAppSelector(
+        (state) =>
             state.favouriteUsers.favouriteUserIds.length
     );
 

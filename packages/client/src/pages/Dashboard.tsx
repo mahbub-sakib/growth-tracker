@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import api from "../lib/Api";
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import UserTableSkeleton from '../components/UserTableSkeleton';
-import { useDispatch, useSelector } from "react-redux";
-import type { RootState, AppDispatch } from "../store/store";
+// import { useDispatch, useSelector } from "react-redux";
+// import type { RootState, AppDispatch } from "../store/store";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
 import {
     setFavouriteUsers,
     addFavouriteUser,
@@ -37,14 +38,14 @@ const Dashboard = () => {
     // const [loading, setLoading] = useState(true);
     // const [error, setError] = useState('');
 
-    const dispatch = useDispatch<AppDispatch>();
+    const dispatch = useAppDispatch();
 
-    const currentUser = useSelector(
-        (state: RootState) => state.user.user
+    const currentUser = useAppSelector(
+        (state) => state.user.user
     );
 
-    const favouriteUserIds = useSelector(
-        (state: RootState) => state.favouriteUsers.favouriteUserIds
+    const favouriteUserIds = useAppSelector(
+        (state) => state.favouriteUsers.favouriteUserIds
     );
 
     const [page, setPage] = useState(() => {

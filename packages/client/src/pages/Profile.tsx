@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import type { AppDispatch, RootState } from "@/store/store";
+// import { useDispatch, useSelector } from "react-redux";
+// import type { AppDispatch, RootState } from "@/store/store";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setUser } from "@/store/userSlice";
 import api from "@/lib/Api";
 
 const Profile = () => {
-    const dispatch = useDispatch<AppDispatch>();
+    const dispatch = useAppDispatch();
 
-    const user = useSelector((state: RootState) => state.user.user);
+    const user = useAppSelector((state) => state.user.user);
 
     const [email, setEmail] = useState("");
     const [isEditing, setIsEditing] = useState(false);
