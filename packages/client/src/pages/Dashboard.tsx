@@ -39,9 +39,12 @@ const Dashboard = () => {
 
     const dispatch = useDispatch<AppDispatch>();
 
+    const currentUser = useSelector(
+        (state: RootState) => state.user.user
+    );
+
     const favouriteUserIds = useSelector(
-        (state: RootState) =>
-            state.favouriteUsers.favouriteUserIds
+        (state: RootState) => state.favouriteUsers.favouriteUserIds
     );
 
     const [page, setPage] = useState(() => {
@@ -384,11 +387,14 @@ const Dashboard = () => {
                                         <td className="px-6 py-4 text-sm">
                                             <button
                                                 onClick={() => handleFavouriteToggle(user.id)}
-                                                className="text-xl"
+                                                disabled={user.id === currentUser?.id}
+                                                className="text-xl disabled:cursor-not-allowed disabled:opacity-30"
                                                 title={
-                                                    favouriteUserIds.includes(user.id)
-                                                        ? "Remove from favorites"
-                                                        : "Add to favorites"
+                                                    user.id === currentUser?.id
+                                                        ? "You cannot favourite yourself"
+                                                        : favouriteUserIds.includes(user.id)
+                                                            ? "Remove from favourites"
+                                                            : "Add to favourites"
                                                 }
                                             >
                                                 {favouriteUserIds.includes(user.id) ? "★" : "☆"}

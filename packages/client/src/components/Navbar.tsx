@@ -23,7 +23,7 @@ const Navbar = () => {
         },
         {
             label: "Favourites (" + favouriteCount + ")",
-            action: () => navigate("/favourites"),
+            action: () => navigate("/favourite"),
         },
         {
             label: "Logout",

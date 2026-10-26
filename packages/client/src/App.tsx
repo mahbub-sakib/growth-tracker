@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
 import DashboardLayout from './layouts/DashboardLayout';
 import Profile from './pages/Profile';
+import Favourite from "./pages/Favourite";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/favourite" element={<Favourite />} />
 
             {/* Add more protected routes here */}
           </Route>
